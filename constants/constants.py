@@ -24,5 +24,5 @@ PATHS['trades'] = os.path.join(PATHS['root'], 'trades')
 PATHS['orders'] = os.path.join(PATHS['root'], 'orders')
 PATHS['histories'] = os.path.join(PATHS['root'], 'histories')
 PATHS['cancelled_orders'] = os.path.join(PATHS['root'], 'cancelled_orders')
-PATHS['limit_order_books'] = os.path.join(PATHS['root'], 'limit_order_book')
+PATHS['limit_order_books'] = os.path.join(PATHS['root'], 'limit_order_books')
 

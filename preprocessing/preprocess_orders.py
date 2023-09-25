@@ -6,6 +6,8 @@ from pathlib import Path
 
 # Import Homebrew
 from utils.other_utils import check_empty_csv
+from utils.time_utils import timeit
+
 
 
 def preprocess_orders(path):
@@ -24,10 +26,6 @@ def preprocess_orders(path):
     value : pd.DataFrame
         New formatted order update file
     """
-    
-    # Handle data if file is empty
-    if check_empty_csv(path):
-        return pd.read_csv(path)
     
 
     columns = [
@@ -65,8 +63,8 @@ def preprocess_orders(path):
         'o_d_expiration',
         'o_t_expiration',
         'o_price',
-        'o_price_sto p',
-        'o_price_dfp g',
+        'o_price_stop',
+        'o_price_dfpg',
         'o_disoff',
         'o_q_ini',
         'o_q_min',
@@ -82,42 +80,89 @@ def preprocess_orders(path):
         'o_member',
     ]
 
-    data = pd.read_csv(path, 
-                       names=columns, 
-                       dtype={'o_d_br': str,
-                              'o_t_br': str,
-                              'o_state': str, 
-                              'o_type': str,
-                              'o_execution': str})
+    dtypes = {
+        'o_seq': 'int32',
+        'o_isin': 'string',
+        'o_d_i': 'string',
+        'o_t_i': 'string',
+        'o_cha_id': 'int16',
+        'o_id_fd': 'int64',
+        'o_d_be': 'string',
+        'o_t_be': 'string',
+        'o_m_be': 'int32',
+        'o_d_br': 'string',
+        'o_t_br': 'string',
+        'o_m_br': 'int32',
+        'o_d_va': 'string',
+        'o_t_va': 'string',
+        'o_m_va': 'int32',
+        'o_d_mo': 'string',
+        'o_t_mo': 'string',
+        'o_m_mo': 'float64',
+        'o_d_en': 'string',
+        'o_t_en': 'string',
+        'o_sq_nb': 'int32',
+        'o_sq_nbm': 'int32',
+        'o_d_p': 'string',
+        'o_t_p': 'string',
+        'o_m_p': 'float64',
+        'o_state': 'category',
+        'o_currency': 'category',
+        'o_bs': 'category',
+        'o_type': 'category',
+        'o_execution': 'category',
+        'o_validity': 'category',
+        'o_d_expiration': 'string',
+        'o_t_expiration': 'string',
+        'o_price': 'float64',
+        'o_price_stop': 'float64',
+        'o_price_dfpg': 'int8',
+        'o_disoff': 'int8',
+        'o_q_ini': 'int32',
+        'o_q_min': 'int32',
+        'o_q_dis': 'int32',
+        'o_q_neg': 'int32',
+        'o_app': 'category',
+        'o_origin': 'category',
+        'o_account': 'category',
+        'o_nb_tr': 'int16',
+        'o_q_rem': 'int32',
+        'o_d_upd': 'string',
+        'o_t_upd': 'string',
+        'o_member': 'category',
+    }
 
-    # Converting time columns
-    #data['o_d_en'] = pd.to_datetime(data['o_d_i'], format='%Y%m%d')
+
+    df = pd.read_csv(path, 
+                       names=columns, dtype=dtypes)
     
-    # Creating time columns
-    time_suffix = ['be', 'br', 'va']
-    time_suffix_with_nan = ['mo', 'p']
-    time_suffix_no_us = ['expiration', 'upd']
 
-    for suffix in time_suffix:
-        data[f'o_d_{suffix}'] = data[f'o_d_{suffix}'].apply(lambda x: str(x))
-        data[f'o_t_{suffix}'] = data[f'o_t_{suffix}'].apply(lambda x: str(x))
-        data[f'o_dtm_{suffix}'] = pd.to_datetime(data[f'o_d_{suffix}'] + ' ' + data[f'o_t_{suffix}'], format='%Y%m%d %H:%M:%S') + pd.to_timedelta(data[f'o_m_{suffix}'], unit='us')
+    # Handle data if file is empty
+    if check_empty_csv(df, path):
+        return df
 
-    for suffix in time_suffix_with_nan:
-        na_mask = data[f'o_d_{suffix}'].isnull()
-        data.loc[~na_mask, f'o_d_{suffix}'] = data.loc[~na_mask, f'o_d_{suffix}'].astype(int).astype(str)
-        data.loc[~na_mask, f'o_t_{suffix}'] = data.loc[~na_mask, f'o_t_{suffix}'].astype(str)
-        data.loc[~na_mask, f'o_dtm_{suffix}'] = pd.to_datetime(data[f'o_d_{suffix}'] + ' ' + data[f'o_t_{suffix}'], format='%Y%m%d %H:%M:%S') + pd.to_timedelta(data[f'o_m_{suffix}'], unit='us')
+    new_columns = ['o_dtm_be', 'o_dtm_br', 'o_dtm_va', 'o_dtm_mo', 'o_dtm_p', 'o_dt_expiration', 'o_dt_upd']
+    date_columns = ['o_d_be', 'o_d_br', 'o_d_va', 'o_d_mo', 'o_d_p', 'o_d_expiration', 'o_d_upd']
+    time_columns = ['o_t_be', 'o_t_br', 'o_t_va', 'o_t_mo', 'o_t_p', 'o_t_expiration', 'o_t_upd']
+    microseconds_columns = ['o_m_be', 'o_m_br', 'o_m_va', 'o_m_mo', 'o_m_p']
 
-    for suffix in time_suffix_no_us:
-        data[f'o_d_{suffix}'] = data[f'o_d_{suffix}'].apply(lambda x: str(x))
-        data[f'o_t_{suffix}'] = data[f'o_t_{suffix}'].apply(lambda x: str(x))
-        data[f'o_dt_{suffix}'] = pd.to_datetime(data[f'o_d_{suffix}'] + ' ' + data[f'o_t_{suffix}'], format='%Y%m%d %H:%M:%S')
-        data[f'o_dt_{suffix}'].dt.ceil(freq='s')
+    for i, col in enumerate(date_columns):
+        # Mask for columns with NaNs
+        na_mask = df[date_columns[i]].isnull()
+
+        # Get microseconds
+        try:
+            microseconds = df[microseconds_columns[i]]
+        except IndexError:
+            microseconds = 0
+
+        # Creating new time columns
+        df.loc[~na_mask, new_columns[i]] = pd.to_datetime(df[date_columns[i]] + ' ' + df[time_columns[i]], format='%Y%m%d %H:%M:%S') + pd.to_timedelta(microseconds, unit='us')
 
     #Column drops
-    data.drop(columns=[
+    df.drop(columns=[
         'o_seq',
+        'o_isin',
         'o_d_i', 'o_t_i',
         'o_d_en', 'o_t_en',
         'o_d_be', 'o_t_be', 'o_m_be',       #d,t,m columns
@@ -125,11 +170,15 @@ def preprocess_orders(path):
         'o_d_va', 'o_t_va', 'o_m_va',       #d,t,m columns
         'o_d_mo', 'o_t_mo', 'o_m_mo',       #d,t,m columns
         'o_d_p', 'o_t_p', 'o_m_p',          #d,t,m columns
+        'o_currency',
+        'o_price_dfpg',
+        'o_disoff',
         'o_d_expiration', 'o_t_expiration', #d,t columns
         'o_d_upd', 'o_t_upd',               #d,t columns
+        'o_price_dfpg', 'o_disoff',
     ], inplace=True)
 
-    return data
+    return df
 
 
 def read_processed_orders(path):

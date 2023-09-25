@@ -6,6 +6,8 @@ from pathlib import Path
 
 # Import Homebrew
 from utils.other_utils import check_empty_csv
+from utils.time_utils import timeit
+
 
 
 def preprocess_trades(path):
@@ -23,10 +25,6 @@ def preprocess_trades(path):
     value : pd.DataFrame
         New formatted trade file
     """
-
-    # Handle data if file is empty
-    if check_empty_csv(path):
-        return pd.read_csv(path)
 
     # Specify headers that will be used in the clean database.
     columns = [
@@ -66,15 +64,55 @@ def preprocess_trades(path):
         't_s_type',
     ]
 
+    dtypes = {
+        't_seq': 'int32',
+        't_capital': 'float64',
+        't_price': 'float64',
+        't_price_max': 'float',
+        't_price_min': 'float',
+        't_d_b_en': 'int32',
+        't_t_b_en': 'string',
+        't_d_s_en': 'int32',
+        't_t_s_en': 'string',
+        't_d_neg': 'string',
+        't_t_neg': 'string',
+        't_m_neg': 'int32',
+        't_currency': 'category',
+        't_cd_gc': 'category',
+        't_id_b_fd': 'int64',
+        't_id_s_fd': 'int64',
+        't_id_u_fd': 'float',
+        't_undo': 'category',
+        't_app': 'category',
+        't_isin': 'category',
+        't_origin': 'category',
+        't_b_sq_nb': 'int32',
+        't_s_sq_nb': 'int32',
+        't_b_account': 'category',
+        't_s_account': 'category',
+        't_cd_pc': 'category',
+        't_q_exchanged': 'int32',
+        't_tr_nb': 'int32',
+        't_id_tr': 'int64',
+        't_agg': 'category',
+        't_yield': 'float',
+        't_spread': 'float',
+        't_b_type': 'category',
+        't_s_type': 'category',
+    }
+
     # Read data with headers this time.
-    data = pd.read_csv(path, names=columns)
+    data = pd.read_csv(path, names=columns, dtype=dtypes)
     
+
+    # Handle data if file is empty
+    if check_empty_csv(data, path):
+        return data
+
+
     # Create time columns
     data['t_d_b_en'] = pd.to_datetime(data['t_d_b_en'], format='%Y%m%d')
     data['t_d_s_en'] = pd.to_datetime(data['t_d_s_en'], format='%Y%m%d')
-
-    data['t_d_neg'] = data[f't_d_neg'].apply(lambda x: str(x))
-    data['t_t_neg'] = data[f't_t_neg'].apply(lambda x: str(x))
     data['t_dtm_neg'] = pd.to_datetime(data[f't_d_neg'] + ' ' + data[f't_t_neg'], format='%Y%m%d %H:%M:%S') + pd.to_timedelta(data[f't_m_neg'], unit='us')
 
     #Column drops

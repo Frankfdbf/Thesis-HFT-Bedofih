@@ -15,41 +15,39 @@ def get_cancelled_orders():
     Create files with cancelled orders obtained from the order files.
     Add why we need to have them ...
 
-    Parameters
-    ----------
-    x: 
-
     Returns
     -------
     None.
 
     Creates one file per ISIN and per day with 4 columns:
-    - o_id_fd
-    - o_cha_id
-    - o_dtm_mo
-    - o_state
+    o_dtm_mo, o_id_fd, o_cha_id, o_state.
     """
     for isin in tqdm(STOCKS.all):
-        for file in os.listdir(os.path.join(PATHS['orders'], isin)):
+        for file in tqdm(os.listdir(os.path.join(PATHS['orders'], isin))):
             # Paths
-            date = file[-12:-4]
-            output_filename = f'cancelledOrders_{isin}_{date}.csv'
+            #date = file[-12:-4]
+            date = file[-16:-8]
+
+            output_filename = f'cancelledOrders_{isin}_{date}.parquet'
             origin = os.path.join(PATHS['orders'], isin, file)
             destination = os.path.join(PATHS['cancelled_orders'], isin, output_filename)
 
+            # Read file
+            #df = read_processed_orders(origin)
+            df = pd.read_parquet(origin)
+
+            # Define the valid states
+            valid_states = ['S', '4', 'C', 'P']
+
+            # Specify the columns you need
+            columns_to_select = ['o_dtm_mo', 'o_id_fd', 'o_cha_id', 'o_state']
+
             # Create df with only cancelled orders
-            df = read_processed_orders(origin)
-            cancelled_orders = df[
-                (df.o_state == 'S') | 
-                (df.o_state == '4') | 
-                (df.o_state == 'C') | 
-                (df.o_state == 'P')
-                ].copy()
-            cancelled_orders = cancelled_orders[['o_dtm_mo', 'o_id_fd', 'o_cha_id', 'o_state']]
+            cancelled_orders = df[df.o_state.isin(valid_states)].copy()[columns_to_select]
 
             # Save file
-            cancelled_orders.to_csv(destination, index=False)
-
+            cancelled_orders.to_parquet(destination, index=False)
+        break
 
 def concatenate_by_isin():
     """
@@ -57,19 +55,12 @@ def concatenate_by_isin():
     concatenated by isin.
     Add why we need to have them ...
 
-    Parameters
-    ----------
-    x: 
-
     Returns
     -------
     None.
 
     Creates one file per ISIN  with 4 columns:
-    - o_id_fd
-    - o_cha_id
-    - o_dtm_mo
-    - o_state
+    o_dtm_mo, o_id_fd, o_cha_id, o_state.
     """
     for isin in tqdm(STOCKS.all):
         # Create main dataframe per isin
@@ -78,7 +69,8 @@ def concatenate_by_isin():
         # Concatenate dataframe
         for file in os.listdir(os.path.join(PATHS['cancelled_orders'], isin)):
             origin = os.path.join(PATHS['cancelled_orders'], isin, file)
-            daily_df = pd.read_csv(origin)
+            #daily_df = pd.read_csv(origin)
+            daily_df = pd.read_parquet(origin)
             total_df = pd.concat([total_df, daily_df], ignore_index=True)
 
         total_df.sort_values(by=['o_dtm_mo', 'o_id_fd'], inplace=True)
@@ -90,9 +82,11 @@ def concatenate_by_isin():
         """
 
         # Save file
-        output_filename = f'cancelledOrders_{isin}.csv'
+        output_filename = f'cancelledOrders_{isin}.parquet'
         destination = os.path.join(PATHS['cancelled_orders'], isin, output_filename)
-        total_df.to_csv(destination, index=False)
+        total_df.to_parquet(destination, index=False)
+
+        break
 
 
 if __name__ == '__main__':
