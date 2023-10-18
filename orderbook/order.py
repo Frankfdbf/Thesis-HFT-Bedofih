@@ -343,7 +343,7 @@ class Order2:
     
     """
 
-
+#### Class slightly changed. Especially for datetimes and quantity (speak with Christophe and Paolo)
 class Order:
     """
     A class to represent an order object.
