@@ -10,18 +10,18 @@ import pandas as pd
 class Stocks:
     """
     Class object to store the stocks that will be used for analysis and their
-    different classification
+    different classification.
     """
     
     def __init__(self):
         self.path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 
                                  'indices_constituents_list.xlsx')
-        #self.path = os.path.join(os.getcwd(), 'indices_constituents_list.xlsx')
+        # Read Excel file
         self.data = pd.read_excel(self.path, sheet_name='All Tickers SBF 2017')
 
         self.all = list(self.data[self.data.included == True].isin_id)
-        self.category_A = None
-        self.category_B = None
-        self.category_C = None
-        self.llp = None
-        self.not_llp = None
+        self.category_A = None      # Stocks in category A
+        self.category_B = None      # Stocks in category B
+        self.category_C = None      # Stocks in category C
+        self.llp = None             # Stocks in llp program
+        self.not_llp = None         # Stocks not in llp program
