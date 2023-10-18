@@ -9,24 +9,21 @@ from utils.other_utils import check_empty_csv
 from utils.time_utils import timeit
 
 
-
 def preprocess_orders(path):
     """ Preprocessing of the order update file.
     The function will transform the data into a usable database.
-    The data is returned as a pandas database.
+    The data is returned as a pandas dataframe (to then be saved as .parquet).
 
     Parameters
     ----------
     :param path : string
-        Path of the csv order update file
-
+        Path of the csv file.
     
     Returns
     -------
     value : pd.DataFrame
-        New formatted order update file
+        Newly formatted file.
     """
-    
 
     columns = [
         'o_seq',
@@ -132,10 +129,8 @@ def preprocess_orders(path):
         'o_member': 'category',
     }
 
-
     df = pd.read_csv(path, 
                        names=columns, dtype=dtypes)
-    
 
     # Handle data if file is empty
     if check_empty_csv(df, path):
@@ -147,8 +142,9 @@ def preprocess_orders(path):
     microseconds_columns = ['o_m_be', 'o_m_br', 'o_m_va', 'o_m_mo', 'o_m_p']
 
     for i, col in enumerate(date_columns):
+
         # Mask for columns with NaNs
-        na_mask = df[date_columns[i]].isnull()
+        na_mask = df[col].isnull()
 
         # Get microseconds
         try:
@@ -178,25 +174,4 @@ def preprocess_orders(path):
         'o_price_dfpg', 'o_disoff',
     ], inplace=True)
 
-    return df
-
-
-def read_processed_orders(path):
-    """ Function to read processed file.
-    Add specific actions here.
-
-    Parameters
-    ----------
-    :param path : string
-        Path of the csv trade file
-    
-    Returns
-    -------
-    value : pd.DataFrame
-        New formatted trade file
-    """
-    # Handle data if file is empty
-    df = pd.read_csv(path)
-    if df.empty:
-        print(f"File: \"{Path(path).stem}\" is empty")
     return df

@@ -10,22 +10,20 @@ from utils.other_utils import check_empty_csv
 from utils.time_utils import timeit
 
 
-
 def preprocess_events(path):
     """ Preprocessing of the event file.
     The function will transform the data into a usable database.
-    The data is returned as a pandas database.
+    The data is returned as a pandas dataframe (to then be saved as .parquet).
 
     Parameters
     ----------
     :param path : string
-        Path of the csv order update file
-
+        Path of the csv file.
     
     Returns
     -------
     value : pd.DataFrame
-        New formatted order update file
+        Newly formatted file.
     """
 
     columns = [
@@ -68,7 +66,7 @@ def preprocess_events(path):
     if check_empty_csv(df, path):
         return df
     
-    # Time
+    # Time columns
     new_columns = ['e_dt_me']
     date_columns = ['e_d_me']
     time_columns = ['e_t_me']
@@ -82,13 +80,11 @@ def preprocess_events(path):
     
     # Update time
     df['e_d_upd'] = pd.to_datetime(df['e_d_upd'], format='%Y%m%d')
-    
 
     # Programmed opening time
     na_mask = ((df['e_t_op'] == '0') | (df['e_t_op'] == 0))
     df.loc[na_mask, 'e_t_op'] = np.nan
     df.loc[~na_mask, 'e_t_op'] = pd.to_datetime(df['e_t_op'], format='%H:%M:%S').dt.time
-
 
     #Column drops
     df.drop(columns=[
@@ -98,25 +94,4 @@ def preprocess_events(path):
         'e_cd_pc'
         ], inplace=True)
 
-    return df
-
-
-def read_processed_events(path):
-    """ Function to read processed file.
-    Add specific actions here.
-
-    Parameters
-    ----------
-    :param path : string
-        Path of the csv trade file
-    
-    Returns
-    -------
-    value : pd.dfFrame
-        New formatted trade file
-    """
-    
-    df = pd.read_csv(path)
-    if df.empty:
-        print(f"File: \"{Path(path).stem}\" is empty")
     return df

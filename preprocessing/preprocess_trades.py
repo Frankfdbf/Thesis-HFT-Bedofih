@@ -9,24 +9,22 @@ from utils.other_utils import check_empty_csv
 from utils.time_utils import timeit
 
 
-
 def preprocess_trades(path):
     """ Preprocessing of the trade file.
     The function will transform the data into a usable database.
-    The data can either be exported as csv or return as a pandas database.
+    The data is returned as a pandas dataframe (to then be saved as .parquet).
 
     Parameters
     ----------
     :param path : string
-        Path of the csv trade file
+        Path of the csv file.
     
     Returns
     -------
     value : pd.DataFrame
-        New formatted trade file
+        Newly formatted file.
     """
 
-    # Specify headers that will be used in the clean database.
     columns = [
         't_seq',
         't_capital',
@@ -103,12 +101,10 @@ def preprocess_trades(path):
 
     # Read data with headers this time.
     data = pd.read_csv(path, names=columns, dtype=dtypes)
-    
 
     # Handle data if file is empty
     if check_empty_csv(data, path):
         return data
-
 
     # Create time columns
     data['t_d_b_en'] = pd.to_datetime(data['t_d_b_en'], format='%Y%m%d')
@@ -135,24 +131,3 @@ def preprocess_trades(path):
     ], inplace=True)
 
     return data
-
-
-def read_processed_trades(path):
-    """ Function to read processed file.
-    Add specific actions here.
-
-    Parameters
-    ----------
-    :param path : string
-        Path of the csv trade file
-    
-    Returns
-    -------
-    value : pd.DataFrame
-        New formatted trade file
-    """
-    
-    df = pd.read_csv(path)
-    if df.empty:
-        print(f"File: \"{Path(path).stem}\" is empty")
-    return df
