@@ -57,7 +57,7 @@ def get_removed_orders():
             
             # Specify the columns needed and the unvalid states (everything except order removal)
             unvalid_states = ['0', '1', '5']
-            columns_to_select = ['o_dtm_br', 'o_id_fd', 'o_bs', 'o_state', 'o_account', 'o_member']
+            columns_to_select = ['o_dtm_br', 'o_id_fd', 'o_bs', 'o_state', 'o_account', 'o_member', 'o_nb_tr']
 
             # Create df with only removed orders
             removed_orders = df.drop_duplicates(subset=['o_id_fd'], keep='last')[columns_to_select]

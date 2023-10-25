@@ -2,27 +2,16 @@
 
 # Import Third-Party
 import pandas as pd
-from pathlib import Path
 
 # Import Homebrew
 from utils.other_utils import check_empty_csv
 from utils.time_utils import timeit
 
 
-def preprocess_orders(path):
+def preprocess_orders(path: str) -> pd.DataFrame:
     """ Preprocessing of the order update file.
     The function will transform the data into a usable database.
     The data is returned as a pandas dataframe (to then be saved as .parquet).
-
-    Parameters
-    ----------
-    :param path : string
-        Path of the csv file.
-    
-    Returns
-    -------
-    value : pd.DataFrame
-        Newly formatted file.
     """
 
     columns = [

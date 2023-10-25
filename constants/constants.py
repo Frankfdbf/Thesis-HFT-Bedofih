@@ -30,6 +30,7 @@ MONTHS_STR = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', 
 DATES = Dates2017()
 
 MARKET_OPEN  = datetime.time(hour=9, minute=0, second=0)
+
 MARKET_CLOSE = datetime.time(hour=17, minute=30, second=0)
 CLOSING_AUCTION_CUTOFF = datetime.time(hour=17, minute=35, second=0)
 
