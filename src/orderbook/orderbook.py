@@ -12,7 +12,7 @@ from .order import Order
 from .trade import Trade 
 from .limit_level import LimitLevel
 
-from preprocessing.preprocess_message import preprocess_message
+from src.utils.preprocessing.preprocess_message import preprocess_message
 
 
 class Orderbook:

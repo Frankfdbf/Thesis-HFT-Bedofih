@@ -7,10 +7,9 @@ import pandas as pd
 from tqdm import tqdm
 
 # Import Homebrew
-from orderbook.orderbook import Orderbook
-from utils.other_utils import clean_message
-from utils.time_utils import timeit
-from constants.constants import STOCKS, PATHS, DATES
+from src.orderbook.orderbook import Orderbook
+from src.utils.time_utils import timeit
+from src.constants.constants import STOCKS, PATHS, DATES
 
 
 @timeit
@@ -52,7 +51,6 @@ def reconstruct_orderbook(isin: str, date: dt.date) -> None:
 
     # Add order history (i.e., all orders present before starting the day)
     for message in df_history.to_dict('records'):
-        message = clean_message(message)
         orderbook.process(message)
         
     # WE NOW ADD TO THE BOOK ALL ORDERS SUBMITTED FOR AUCTION 1

@@ -4,8 +4,8 @@
 import pandas as pd
 
 # Import Homebrew
-from utils.other_utils import check_empty_csv
-from utils.time_utils import timeit
+from ..other_utils import check_empty_csv
+from ..time_utils import timeit
 
 
 def preprocess_orders(path: str) -> pd.DataFrame:

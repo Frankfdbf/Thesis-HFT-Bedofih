@@ -6,8 +6,8 @@ import pandas as pd
 from tqdm import tqdm
 
 # Import Homebrew
-from constants.constants import STOCKS, PATHS, CLOSING_AUCTION_CUTOFF
-from utils.time_utils import timeit
+from src.constants.constants import STOCKS, PATHS, CLOSING_AUCTION_CUTOFF
+from src.utils.time_utils import timeit
 
 
 @timeit

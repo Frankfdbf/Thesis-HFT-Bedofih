@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 
 # Import Homebrew
-from utils.other_utils import check_empty_csv
+from ..other_utils import check_empty_csv
 
 
 def preprocess_events(path: str) -> pd.DataFrame:

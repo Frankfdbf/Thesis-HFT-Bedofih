@@ -4,7 +4,7 @@
 import pandas as pd
 
 # Import Homebrew
-from utils.other_utils import check_empty_csv
+from ..other_utils import check_empty_csv
 
 
 def preprocess_trades(path: str) -> pd.DataFrame:

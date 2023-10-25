@@ -6,9 +6,9 @@ import re
 from tqdm import tqdm
 
 # Import Homebrew
-from preprocessing import preprocess_trades, preprocess_orders, preprocess_events
-from constants.constants import STOCKS, PATHS, MONTHS_STR
-from utils.time_utils import timeit
+from src.utils.preprocessing import preprocess_trades, preprocess_orders, preprocess_events
+from src.constants.constants import STOCKS, PATHS, MONTHS_STR
+from src.utils.time_utils import timeit
 
 @timeit
 def create_isin_folder_structure(name, path):
