@@ -45,12 +45,10 @@ class Orderbook:
         self.df_trades = pd.DataFrame() #### temporary
         self.trades: List[Trade] = []
     
-        # used to store market to limit orders during auction 
-        # should be reset after each auction 
-        self.market_limit_orders = [] #### check if needed
-
-        # stop orders waiting to be triggered 
-        self.buy_stop_orders = [] #### check if needed
+        # Objects to store orders that do enter the orderbook as soon they are sent. 
+        #self.market_limit_orders = [] #### check if needed
+        self.valid_for_closing = []
+        self.buy_stop_orders = []
         self.sell_stop_orders = []
 
         # Auction data
@@ -82,9 +80,12 @@ class Orderbook:
         If it doesn't exist, it will be added.
         """
         self.current_message_datetime = message['o_dtm_va']
-
+        
+        # Check for canceled orders.
+        self._remove_canceled_orders()
+        
         if self.is_auction:
-            # Opening auction process
+            # Opening auction process.
             self._run_auction()
             self.auction1_passed = True
 
@@ -100,6 +101,9 @@ class Orderbook:
 
 
     def _add(self, message) -> None:
+        """
+        Details
+        """
         order = Order(
             o_id_cha = message['o_id_cha'],
             o_id_fd = message['o_id_fd'],
@@ -118,6 +122,10 @@ class Orderbook:
             o_dtm_be = message['o_dtm_be'],
             o_dtm_va = message['o_dtm_va'],
         )
+
+        if message['o_validity'] == '7': # valid for closing auction
+            self.valid_for_closing.append(order)
+            return
 
         match message['o_type']:
             case '1':
@@ -186,7 +194,8 @@ class Orderbook:
             # Remove order from self._orders
             popped_item = self._orders.pop(o_id_fd)
         except KeyError:
-            return False
+            #raise NotImplementedError
+            return False #### for now, let go removal of pegged and stop orders
 
         # Remove order from its doubly linked list
         popped_item.pop_from_list()
@@ -241,7 +250,7 @@ class Orderbook:
 
         elif order.o_q_rem != message['o_q_rem']:
             # Change in quantity
-            #### check what happens when order is partially filled (so far has not happened)
+            #### check what happens when order is partially filled (so far has not happened) o_state = '1'
             size_diff = message['o_q_ini'] - order.o_q_ini
             size_dis_diff = message['o_q_dis'] - order.o_q_dis
             size_hid_diff = size_diff - size_dis_diff
@@ -272,23 +281,26 @@ class Orderbook:
 
     def _update(self):
         """
-        Update of the orderbook. Check for canceled orders. Check for trades and
-        update the last trade price accordingly. Check for stop orders to be added
-        to the book.
+        Update of the orderbook. Check for trades and update the last trade 
+        price accordingly. Check for stop orders to be added to the book.
         """
         #### add stop orders trigger
-
-        while self.removed_orders[-1]['o_dtm_br'] < self.current_message_datetime:
-            # Remove canceled orders
-            if self.removed_orders[-1]['o_state'] == '2': break #### check only for cancels, to be checked
-            removed_order = self.removed_orders.pop()
-            self._remove(removed_order['o_id_fd'])
-            
         if not self.is_before_auction:
             # Start registering trades
             pass
 
+
+    def _remove_canceled_orders(self) -> None:
+        """
+        Check for canceled orders. Removes them if any.
+        """
+        while self.removed_orders[-1]['o_dtm_br'] < self.current_message_datetime:
+            # Remove canceled orders
+            removed_order = self.removed_orders.pop()
+            if removed_order['o_state'] != '2':
+                self._remove(removed_order['o_id_fd'])
     
+
     def _run_auction(self) -> None:
         """
         Run auction, set auction price. Make trades.
@@ -299,6 +311,8 @@ class Orderbook:
         self.last_trading_price = price
         
         # Makes trades
+        invalid_bid_quantity = 0
+        invalid_ask_quantity = 0
         order_bid = self.best_bid.orders.head
         order_ask = self.best_ask.orders.head
 

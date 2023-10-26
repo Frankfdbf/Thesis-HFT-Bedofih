@@ -64,7 +64,7 @@ def reconstruct_orderbook(isin: str, date: dt.date) -> None:
         # or here (to have auction)
         if (message_dtm > orderbook.auction_datetime1):
             break
-
+    """
     levels = orderbook.get_levels()
 
     orderbook_dict_bid = {
@@ -79,13 +79,13 @@ def reconstruct_orderbook(isin: str, date: dt.date) -> None:
     df_ask = pd.DataFrame(orderbook_dict_ask)
     df_bid.to_excel('/Users/australien/Desktop/orderbook_bid_new.xlsx')
     df_ask.to_excel('/Users/australien/Desktop/orderbook_ask_new.xlsx')
-
+    """
 
 if __name__ == '__main__':
     isin = STOCKS.all[0]
 
     for date in tqdm(DATES.january):
         print(f'Reconstructing order books - {date}')
-        if date == dt.date(2017, 1, 5):
-            reconstruct_orderbook(isin, date)
-            break
+        #if date == dt.date(2017, 1, 31):
+        reconstruct_orderbook(isin, date)
+            #break

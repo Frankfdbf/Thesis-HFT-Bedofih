@@ -11,7 +11,6 @@ from tqdm import tqdm
 # Import Homebrew
 from src.constants.constants import DATES, PATHS, STOCKS
 from src.orderbook.orderbook import Orderbook
-from src.utils.other_utils import clean_message
 
 
 # Init Logging Facilities
@@ -153,16 +152,12 @@ class OrderTests(TestCase):
             counter = 0
             # Add order history (i.e., all orders present before starting the day)
             for message in df_history.to_dict('records'):
-                message = clean_message(message)
                 orderbook.process(message)
                 counter += 1
 
             # WE NOW ADD TO THE BOOK ALL ORDERS SUBMITTED FOR AUCTION 1
             #---------------------------------------------------------------------------
             for message in df_orders.to_dict('records'): 
-                #### IDEA: we can delete each row after seeing it. 
-                # What will be left will be continuous and auction2
-                # maybe use linked list (if faster).
                 message_dtm = message['o_dtm_va']
                 orderbook.process(message)
                 
@@ -208,8 +203,6 @@ class OrderTests(TestCase):
                 except KeyError:
                     asks_filled_estimated[trade.t_id_s_fd] = trade.t_q_exchanged
 
-            print(bids_filled_estimated)
-            print(bids_filled_dict)
             for key in bids_filled_dict.keys():
                 self.assertEqual(bids_filled_estimated[key], bids_filled_dict[key])
             for key in asks_filled_dict.keys():
