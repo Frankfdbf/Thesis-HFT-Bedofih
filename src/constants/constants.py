@@ -12,13 +12,13 @@ from .dates.dates import Dates2017
 
 # Paths to folders
 PATHS = {}
-PATHS['root'] = '/Volumes/Extreme ssd'
+#PATHS['root'] = '/Volumes/Extreme ssd'
+PATHS['root'] = '/Users/australien/Documents/IESEG/Master 2/Data'
 PATHS['raw'] = os.path.join(PATHS['root'], 'raw')
 PATHS['events'] = os.path.join(PATHS['root'], 'events')
 PATHS['trades'] = os.path.join(PATHS['root'], 'trades')
 PATHS['orders'] = os.path.join(PATHS['root'], 'orders')
 PATHS['histories'] = os.path.join(PATHS['root'], 'histories')
-#PATHS['cancelled_orders'] = os.path.join(PATHS['root'], 'cancelled_orders')
 PATHS['removed_orders'] = os.path.join(PATHS['root'], 'removed_orders')
 PATHS['limit_order_books'] = os.path.join(PATHS['root'], 'limit_order_books')
 

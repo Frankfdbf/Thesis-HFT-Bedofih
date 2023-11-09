@@ -54,7 +54,7 @@ def reorganize_data():
         """
         
         # For each month
-        for month in tqdm(MONTHS_STR[0:1]):
+        for month in tqdm(MONTHS_STR[1:2]):
             dates = [date for date in os.listdir(os.path.join(PATHS['raw'], month)) if os.path.isdir(os.path.join(PATHS['raw'], month, date))]
             # For each trading day during the month
             for date in tqdm(dates):
@@ -103,7 +103,7 @@ def reorganize_data():
                                     df = preprocess_orders(origin_path)
                                     df.to_parquet(destination_path, index=False)
                                     del df
-            break # Stop after 1 month (for testing only)
+            #break # Stop after 1 month (for testing only)
 
 
 if __name__ == '__main__':
@@ -112,7 +112,7 @@ if __name__ == '__main__':
     for key, value in PATHS.items():
         if key in ('root', 'raw'):
             continue
-        elif key in ('orders', 'trades', 'histories', 'cancelled_orders', 'removed_orders'): 
+        elif key in ('orders', 'trades', 'histories', 'removed_orders'): 
             create_isin_folder_structure(name=key, path=value)
         else:
             create_single_folder(name=key, path=value)

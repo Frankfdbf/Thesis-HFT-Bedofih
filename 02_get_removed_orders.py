@@ -10,7 +10,7 @@ from pathlib import Path
 from src.constants.constants import STOCKS, PATHS
 
 
-def get_removed_orders():
+def get_removed_orders() -> None:
     """
     Create files with removed orders obtained from the order files.
     Messages that indicate removal, actually carry other pieces of information. 

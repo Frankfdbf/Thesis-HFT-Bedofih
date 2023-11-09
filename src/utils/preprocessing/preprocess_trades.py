@@ -87,20 +87,23 @@ def preprocess_trades(path: str) -> pd.DataFrame:
         't_s_type': 'category',
     }
 
-    # Read data with headers this time.
-    data = pd.read_csv(path, names=columns, dtype=dtypes)
+    try:
+        df = pd.read_csv(path, names=columns, dtype=dtypes)
+    except Exception as e:
+        print(e)
+        print(f'Error path: {path}')
 
     # Handle data if file is empty
-    if check_empty_csv(data, path):
-        return data
+    if check_empty_csv(df, path):
+        return df
 
     # Create time columns
-    data['t_d_b_en'] = pd.to_datetime(data['t_d_b_en'], format='%Y%m%d')
-    data['t_d_s_en'] = pd.to_datetime(data['t_d_s_en'], format='%Y%m%d')
-    data['t_dtm_neg'] = pd.to_datetime(data[f't_d_neg'] + ' ' + data[f't_t_neg'], format='%Y%m%d %H:%M:%S') + pd.to_timedelta(data[f't_m_neg'], unit='us')
+    df['t_d_b_en'] = pd.to_datetime(df['t_d_b_en'], format='%Y%m%d')
+    df['t_d_s_en'] = pd.to_datetime(df['t_d_s_en'], format='%Y%m%d')
+    df['t_dtm_neg'] = pd.to_datetime(df[f't_d_neg'] + ' ' + df[f't_t_neg'], format='%Y%m%d %H:%M:%S') + pd.to_timedelta(df[f't_m_neg'], unit='us')
 
     #Column drops
-    data.drop(columns=[
+    df.drop(columns=[
         't_seq',                        # AMF internal sequencial number
         't_price_max',                  # Always empty
         't_price_min',                  # Always empty
@@ -110,7 +113,6 @@ def preprocess_trades(path: str) -> pd.DataFrame:
         't_cd_gc',                      # Unsure
         't_undo',                       # Unsure
         't_id_u_fd',                    # Unsure
-        't_app',                        # Unsure: besoin de filtrer les trades avec cet indicateur ? Enlever les trades où une "application" survient ?
         't_isin',                       # Already have it in file name
         't_origin',                     # Unsure Origin of message (opening trade or rest of session)
         't_cd_pc',                      # Always 025 (Paris)
@@ -118,4 +120,4 @@ def preprocess_trades(path: str) -> pd.DataFrame:
         't_d_neg', 't_t_neg', 't_m_neg',# Ex time columns
     ], inplace=True)
 
-    return data
+    return df

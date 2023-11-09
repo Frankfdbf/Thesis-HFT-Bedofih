@@ -11,15 +11,10 @@ from src.utils.time_utils import timeit
 
 
 @timeit
-def get_auctions():
+def get_auctions() -> None:
     """
     Get auction time and price for each day and isin.
     Save it all to one file. (Can be saved to csv for easier readability).
-
-    Returns
-    -------
-    None.
-    Save file with auction data.
     """
 
     columns = [

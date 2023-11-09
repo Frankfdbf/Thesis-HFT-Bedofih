@@ -18,7 +18,6 @@ def reconstruct_orderbook(isin: str, date: dt.date) -> None:
     #---------------------------------------------------------------------------
     date_str = format(date, '%Y%m%d')
     date_datetime = dt.datetime.strptime(date_str, '%Y%m%d').date()
-    auction1_limit = dt.datetime.strptime(date_str, '%Y%m%d') + dt.timedelta(hours=9, minutes=0, seconds=30)
 
     # Read history file (VHOXhistory)
     history_name = f'VHOXhistory_{isin}_{date_str}.parquet'
@@ -44,9 +43,9 @@ def reconstruct_orderbook(isin: str, date: dt.date) -> None:
     auct_open_datetime = df_auctions.loc[mask].auct_open_datetime.item()
     auct_close_datetime = df_auctions.loc[mask].auct_close_datetime.item()
 
-    orderbook = Orderbook(date, isin)
-    orderbook.set_auction_datetime1(auct_open_datetime)
-    orderbook.set_auction_datetime2(auct_close_datetime)
+    orderbook = Orderbook(date, isin, auct_open_datetime, auct_close_datetime)#####
+    #orderbook.set_auction_datetime1(auct_open_datetime)
+    #orderbook.set_auction_datetime2(auct_close_datetime)
     orderbook.set_removed_orders(df_removed_orders)
 
     # Add order history (i.e., all orders present before starting the day)
@@ -58,34 +57,24 @@ def reconstruct_orderbook(isin: str, date: dt.date) -> None:
     for message in df_orders.to_dict('records'): 
         
         message_dtm = message['o_dtm_va']
-        # stop here (to have orderbook before auction)
+        #### stop here (to have orderbook before auction)
         
         orderbook.process(message)
-        # or here (to have auction)
-        if (message_dtm > orderbook.auction_datetime1):
+        #### or here (to have auction)
+       
+        if message_dtm.time() > dt.time(hour=9, minute=10): #### Testing trades
             break
-    """
-    levels = orderbook.get_levels()
+    
+    #### debugging
+    #orderbook.df_trades.to_csv('/Users/australien/Desktop/estimated_trades.csv')
+    
 
-    orderbook_dict_bid = {
-        'price_bid': [_ for _ in levels['bids'].keys()],
-        'quantity_bid': [_ for _ in levels['bids'].values()],
-    }
-    orderbook_dict_ask = {
-        'price_ask': [_ for _ in levels['asks'].keys()],
-        'quantity_ask': [_ for _ in levels['asks'].values()],
-    }
-    df_bid = pd.DataFrame(orderbook_dict_bid)
-    df_ask = pd.DataFrame(orderbook_dict_ask)
-    df_bid.to_excel('/Users/australien/Desktop/orderbook_bid_new.xlsx')
-    df_ask.to_excel('/Users/australien/Desktop/orderbook_ask_new.xlsx')
-    """
 
 if __name__ == '__main__':
     isin = STOCKS.all[0]
 
     for date in tqdm(DATES.january):
         print(f'Reconstructing order books - {date}')
-        #if date == dt.date(2017, 1, 31):
-        reconstruct_orderbook(isin, date)
-            #break
+        if date == dt.date(2017, 1, 2):
+            reconstruct_orderbook(isin, date)
+            break

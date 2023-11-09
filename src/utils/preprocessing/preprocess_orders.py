@@ -118,8 +118,12 @@ def preprocess_orders(path: str) -> pd.DataFrame:
         'o_member': 'category',
     }
 
-    df = pd.read_csv(path, 
-                       names=columns, dtype=dtypes)
+    try:
+        df = pd.read_csv(path, names=columns, dtype=dtypes)
+    except Exception as e:
+        print(e)
+        print(f'Error path: {path}')
+
 
     # Handle data if file is empty
     if check_empty_csv(df, path):

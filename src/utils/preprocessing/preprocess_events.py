@@ -48,7 +48,11 @@ def preprocess_events(path: str) -> pd.DataFrame:
         'e_cd_pc': 'category'
     }
 
-    df = pd.read_csv(path, names=columns, dtype=dtypes)
+    try:
+        df = pd.read_csv(path, names=columns, dtype=dtypes)
+    except Exception as e:
+        print(e)
+        print(f'Error path: {path}')
     
     # Handle data if file is empty
     if check_empty_csv(df, path):

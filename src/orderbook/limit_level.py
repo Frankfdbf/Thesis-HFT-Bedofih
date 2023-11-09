@@ -28,7 +28,7 @@ class LimitLevel:
         self.hidden_size_mixed =  order.o_q_rem - order.o_q_dis if order.o_member == 'MIX' else 0
         self.hidden_size_non =  order.o_q_rem - order.o_q_dis if order.o_member == 'NON' else 0
 
-        # Doubly-Linked-list attributes
+        # Doubly-Linked-list
         self.orders = OrderList(self)
         self.append(order)
 
@@ -43,6 +43,6 @@ class LimitLevel:
 
     def append(self, order: Order) -> None:
         """
-        Wrapper function to make appending to Order List simpler.
+        Wrapper function to make appending an order easier.
         """
         return self.orders.append(order)
