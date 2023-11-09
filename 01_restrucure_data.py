@@ -11,7 +11,7 @@ from src.constants.constants import STOCKS, PATHS, MONTHS_STR
 from src.utils.time_utils import timeit
 
 @timeit
-def create_isin_folder_structure(name, path):
+def create_isin_folder_structure(name: str, path: str) -> None:
     """
     Create folder structure with main directory and isins as sub directories.
 
@@ -30,7 +30,7 @@ def create_isin_folder_structure(name, path):
             os.mkdir(os.path.join(path, isin))
 
 @timeit
-def create_single_folder(name, path):
+def create_single_folder(name: str, path: str) -> None:
     """
     Create a new folder.
 
@@ -44,7 +44,7 @@ def create_single_folder(name, path):
         os.mkdir(path)
 
 @timeit
-def reorganize_data():
+def reorganize_data() -> None:
         """
         Copy and formats necessary files from raw structure to the organised one.
 
