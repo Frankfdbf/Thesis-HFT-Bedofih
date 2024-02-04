@@ -1,4 +1,5 @@
 # Import Built-Ins
+import traceback
 
 # Import Third-Party
 import pandas as pd
@@ -8,46 +9,26 @@ from ..other_utils import check_empty_csv
 
 
 def preprocess_trades(path: str) -> pd.DataFrame:
-    """ Preprocessing of the trade file.
-    The function will transform the data into a usable database.
-    The data is returned as a pandas dataframe (to then be saved as .parquet).
+    """ Preprocessing of the trade file. The function will transform the data 
+    into a usable database. The data is returned as a pandas dataframe (to then 
+    be saved as .parquet).
+
+    Args:
+        path (str): path of the trade file.
+
+    Returns:
+        pd.DataFrame: processed table of the trades.
     """
 
+
+
     columns = [
-        't_seq',
-        't_capital',
-        't_price',
-        't_price_max',
-        't_price_min',
-        't_d_b_en',
-        't_t_b_en',
-        't_d_s_en',
-        't_t_s_en',
-        't_d_neg',
-        't_t_neg',
-        't_m_neg',
-        't_currency',
-        't_cd_gc',
-        't_id_b_fd',
-        't_id_s_fd',
-        't_id_u_fd',
-        't_undo',
-        't_app',
-        't_isin',
-        't_origin',
-        't_b_sq_nb',
-        't_s_sq_nb',
-        't_b_account',
-        't_s_account',
-        't_cd_pc',
-        't_q_exchanged',
-        't_tr_nb',
-        't_id_tr',
-        't_agg',
-        't_yield',
-        't_spread',
-        't_b_type',
-        't_s_type',
+        't_seq', 't_capital', 't_price', 't_price_max', 't_price_min', 't_d_b_en',
+        't_t_b_en', 't_d_s_en', 't_t_s_en', 't_d_neg', 't_t_neg', 't_m_neg',
+        't_currency', 't_cd_gc', 't_id_b_fd', 't_id_s_fd', 't_id_u_fd', 't_undo',
+        't_app', 't_isin', 't_origin', 't_b_sq_nb', 't_s_sq_nb', 't_b_account', 
+        't_s_account', 't_cd_pc', 't_q_exchanged', 't_tr_nb', 't_id_tr', 't_agg',
+        't_yield', 't_spread', 't_b_type', 't_s_type'
     ]
 
     dtypes = {
@@ -90,11 +71,11 @@ def preprocess_trades(path: str) -> pd.DataFrame:
     try:
         df = pd.read_csv(path, names=columns, dtype=dtypes)
     except Exception as e:
-        print(e)
+        print(traceback.format_exc())
         print(f'Error path: {path}')
-
-    # Handle data if file is empty
-    if check_empty_csv(df, path):
+        return pd.DataFrame()
+    
+    if check_empty_csv(df, path): 
         return df
 
     # Create time columns
@@ -102,7 +83,6 @@ def preprocess_trades(path: str) -> pd.DataFrame:
     df['t_d_s_en'] = pd.to_datetime(df['t_d_s_en'], format='%Y%m%d')
     df['t_dtm_neg'] = pd.to_datetime(df[f't_d_neg'] + ' ' + df[f't_t_neg'], format='%Y%m%d %H:%M:%S') + pd.to_timedelta(df[f't_m_neg'], unit='us')
 
-    #Column drops
     df.drop(columns=[
         't_seq',                        # AMF internal sequencial number
         't_price_max',                  # Always empty

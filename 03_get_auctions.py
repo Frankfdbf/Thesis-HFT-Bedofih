@@ -62,7 +62,10 @@ def get_auctions() -> None:
             )
             
             # Append row
-            df_all_auctions = pd.concat([df_all_auctions, df_row], ignore_index=True)
+            if len(df_all_auctions) > 0: 
+                df_all_auctions = pd.concat([df_all_auctions, df_row], ignore_index=True)
+            else:
+                df_all_auctions = df_row.copy()
 
     # Save file
     df_all_auctions.to_parquet(os.path.join(PATHS['root'], 'auctions.parquet'), index=False)

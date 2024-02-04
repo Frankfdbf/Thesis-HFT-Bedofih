@@ -5,16 +5,26 @@
 # Import Homebrew
 from src.orderbook.limit_level import LimitLevel
 
-def preprocess_message(message:dict, is_before_auction: bool, 
-                       best_bid: LimitLevel, best_ask: LimitLevel) -> dict:
-    """
-    Make a few changes to order message before sending it to the orderbook class.
-    Correct the o_q_dis information. 
-    Modifies price for market, stop market and market to limit orders (init 0).
-    For market and market to limit orders during auction, price are 0 or 100k.
-    For market limit orders during continuous trading, price equals best bid
+def preprocess_message(
+        message:dict, is_before_auction: bool, best_bid: LimitLevel, best_ask: LimitLevel
+) -> dict:
+    """ Make a few changes to order message before sending it to the orderbook 
+    class.
+    - Correct the o_q_dis information. 
+    - Modifies price for market, stop market and market to limit orders (init 0).
+    - For market and market to limit orders during auction, price are 0 or 100k.
+    - For market limit orders during continuous trading, price equals best bid
     (ask) for sell (ask) orders.
-    Do other preprocessing of the message.
+    - Do other preprocessing of the message.
+
+    Args:
+        message (dict): order message as dict.
+        is_before_auction (bool): is true if the message is before the auction.
+        best_bid (LimitLevel): best bid limit level.
+        best_ask (LimitLevel): best ask limit level.
+
+    Returns:
+        dict: updated message.
     """
 
     # Set o_q_dis correctly (default: 0 if not iceberg order)
@@ -47,11 +57,15 @@ def preprocess_message(message:dict, is_before_auction: bool,
             elif message['o_bs'] == 'S':
                 message['o_price'] = 0.0
                 
-        elif message['o_type'] == 'K': 
-            # market-to-limit order
-            if message['o_bs'] == 'B':
-                message['o_price'] = best_ask.price
-            elif message['o_bs'] == 'S':
-                message['o_price'] = best_bid.price
+        #elif message['o_type'] == 'K': 
+        #    # market-to-limit order
+        #    if message['o_bs'] == 'B':
+        #        message['o_price'] = best_ask.price
+        #    elif message['o_bs'] == 'S':
+        #        message['o_price'] = best_bid.price
+    
+    # Round prices to avoid errors
+    message['o_price'] = round(message['o_price'], 3)
+    message['o_price_stop'] = round(message['o_price_stop'], 3)
 
     return message

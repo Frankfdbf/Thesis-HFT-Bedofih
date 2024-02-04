@@ -5,8 +5,10 @@ from typing import Dict
 # Import Third-Party
 import pandas as pd 
 import numpy as np
+import math
 
 # Import Homebrew
+from logger import logger
 from .limit_level import LimitLevel
 from .trade import Trade
 
@@ -29,8 +31,14 @@ class Auction:
         Runs auction process: sets auction price, makes auction trades.
         """
         self._calculate_uncrossing_price(orderbook.bids, orderbook.asks)
-        self._execute_uncrossing_trades(orderbook)
+        self._execute_auction_trades(orderbook)
         self.passed = True
+
+        logger.debug(f'Opening auction - {self.datetime} - Passed.')
+
+        while len(orderbook.valid_for_auctions) > 0:
+            order_id = orderbook.valid_for_auctions.pop()
+            orderbook._remove(order_id)
 
     
     def _calculate_uncrossing_price(self, bids: Dict[float, LimitLevel], 
@@ -148,3 +156,17 @@ class Auction:
             if orderbook.best_bid == None or orderbook.best_ask == None:
                 # One (both) side(s) of the book is (are) empty.
                 break
+
+    def _execute_auction_trades(self, orderbook) -> None:
+        """
+        Check for trades since the last message. 
+        Updates the orders and limit levels involved if any trades.
+        """
+        #while self.trades[-1]['t_dtm_neg'] < self.current_message_datetime:
+        #while isinstance(orderbook.trades[-1]['t_agg'], float):
+        while orderbook.trades[-1]['t_agg'] not in ['A', 'V']:
+            #### Normally dtype str; if nan, dtype = float
+            trade = orderbook.trades.pop()
+            orderbook._fill_order(trade['t_id_b_fd'], trade['t_q_exchanged'])
+            orderbook._fill_order(trade['t_id_s_fd'], trade['t_q_exchanged'])
+            orderbook.last_trading_price = trade['t_price']

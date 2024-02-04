@@ -8,9 +8,8 @@ import pandas as pd
 
 
 class Dates2017:
-    """
-    Class object to store the dates that will be used for analysis. Categories
-    include: 
+    """ Class object to store the dates that will be used for analysis. 
+    Categories include: 
     - month, 
     - day of the week.
     """

@@ -45,22 +45,29 @@ def get_removed_orders() -> None:
             output_filename = f'removedOrders_{isin}_{date}.parquet'
             destination = os.path.join(PATHS['removed_orders'], isin, output_filename)
 
+            # Columns needed 
+            columns_to_select = ['o_dtm_br', 'o_id_fd', 'o_bs', 'o_state', 'o_account', 'o_member', 'o_nb_tr']
+
             # Read files and merge history and orders
             df_orders = pd.read_parquet(origin_orders)
+            if len(df_orders) == 0:
+                p = Path(origin_orders)
+                print(f'File: \'{p.stem}\' is empty (path: \'{p.parent}\').')
+
             try:
                 df_history = pd.read_parquet(origin_history)
-                df = pd.concat([df_history, df_orders])
+                df = pd.concat([df_history[columns_to_select], df_orders[columns_to_select]])
+
             except FileNotFoundError:
                 df = df_orders
                 p = Path(origin_history)
-                print(f'File: \'{p.stem}\' is empty (path: \'{p.parent}\').')
+                print(f'File: \'{p.stem}\' does not exist (path: \'{p.parent}\').')
             
-            # Specify the columns needed and the unvalid states (everything except order removal)
+            # Specify the unvalid states (everything except order removal)
             unvalid_states = ['0', '1', '5']
-            columns_to_select = ['o_dtm_br', 'o_id_fd', 'o_bs', 'o_state', 'o_account', 'o_member', 'o_nb_tr']
-
+            
             # Create df with only removed orders
-            removed_orders = df.drop_duplicates(subset=['o_id_fd'], keep='last')[columns_to_select]
+            removed_orders = df.drop_duplicates(subset=['o_id_fd'], keep='last')
             removed_orders = removed_orders[~removed_orders.o_state.isin(unvalid_states)]
 
             # Save file

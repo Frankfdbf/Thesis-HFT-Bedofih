@@ -21,12 +21,14 @@ class LimitLevel:
         self.price = order.o_price
         self.size = order.o_q_rem
 
-        self.disclosed_size_hft = order.o_q_dis if order.o_member == 'HFT' else 0
-        self.disclosed_size_mixed = order.o_q_dis if order.o_member == 'MIX' else 0
-        self.disclosed_size_non = order.o_q_dis if order.o_member == 'NON' else 0
-        self.hidden_size_hft = order.o_q_rem - order.o_q_dis if order.o_member == 'HFT' else 0
-        self.hidden_size_mixed =  order.o_q_rem - order.o_q_dis if order.o_member == 'MIX' else 0
-        self.hidden_size_non =  order.o_q_rem - order.o_q_dis if order.o_member == 'NON' else 0
+        displayed_qty = min(order.o_q_rem, order.o_q_dis)
+
+        self.disclosed_size_hft = displayed_qty if order.o_member == 'HFT' else 0
+        self.disclosed_size_mixed = displayed_qty if order.o_member == 'MIX' else 0
+        self.disclosed_size_non = displayed_qty if order.o_member == 'NON' else 0
+        self.hidden_size_hft = order.o_q_rem - displayed_qty if order.o_member == 'HFT' else 0
+        self.hidden_size_mixed = order.o_q_rem - displayed_qty if order.o_member == 'MIX' else 0
+        self.hidden_size_non = order.o_q_rem - displayed_qty if order.o_member == 'NON' else 0
 
         # Doubly-Linked-list
         self.orders = OrderList(self)

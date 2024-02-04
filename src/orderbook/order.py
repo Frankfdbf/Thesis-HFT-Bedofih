@@ -122,18 +122,44 @@ class Order:
             self.root.tail = order
 
             # Update quantities
+            displayed_qty = min(order.o_q_rem, order.o_q_dis)
+
             self.parent_limit.size += order.o_q_rem
-            self.parent_limit.disclosed_size_hft += order.o_q_dis if order.o_member == 'HFT' else 0
-            self.parent_limit.disclosed_size_mixed += order.o_q_dis if order.o_member == 'MIX' else 0
-            self.parent_limit.disclosed_size_non += order.o_q_dis if order.o_member == 'NON' else 0
-            self.parent_limit.hidden_size_hft += order.o_q_rem - order.o_q_dis if order.o_member == 'HFT' else 0
-            self.parent_limit.hidden_size_mixed += order.o_q_rem - order.o_q_dis if order.o_member == 'MIX' else 0
-            self.parent_limit.hidden_size_non += order.o_q_rem - order.o_q_dis if order.o_member == 'NON' else 0
+            self.parent_limit.disclosed_size_hft += displayed_qty if order.o_member == 'HFT' else 0
+            self.parent_limit.disclosed_size_mixed += displayed_qty if order.o_member == 'MIX' else 0
+            self.parent_limit.disclosed_size_non += displayed_qty if order.o_member == 'NON' else 0
+            self.parent_limit.hidden_size_hft += order.o_q_rem - displayed_qty if order.o_member == 'HFT' else 0
+            self.parent_limit.hidden_size_mixed += order.o_q_rem - displayed_qty if order.o_member == 'MIX' else 0
+            self.parent_limit.hidden_size_non += order.o_q_rem - displayed_qty if order.o_member == 'NON' else 0
 
         else:
             ####
             print('Does this happen ? Yes it does.')
             self.next_item.append(order)
+
+    def overwrite_quantity_negociated(self, q_neg) -> None:
+        """
+        Override to change quantity negociated, quantity remaining and update 
+        the limit level accordingly. This is used in orderbook when an order partially filled 
+        """
+
+        self.o_q_neg = q_neg
+        self.o_q_rem = self.o_q_ini - q_neg
+
+        old_q_dis = self.o_q_dis
+        self.o_q_dis = min(self.o_q_dis, self.o_q_rem)
+
+        impact_q_dis = old_q_dis - self.o_q_dis
+        impact_q_hid = q_neg - impact_q_dis
+
+        # Update quantities
+        self.parent_limit.size -= q_neg
+        self.parent_limit.disclosed_size_hft -= (impact_q_dis if self.o_member == 'HFT' else 0)
+        self.parent_limit.disclosed_size_mixed -= (impact_q_dis if self.o_member == 'MIX' else 0)
+        self.parent_limit.disclosed_size_non -= (impact_q_dis if self.o_member == 'NON' else 0)
+        self.parent_limit.hidden_size_hft -= (impact_q_hid if self.o_member == 'HFT' else 0)
+        self.parent_limit.hidden_size_mixed -= (impact_q_hid if self.o_member == 'MIX' else 0)
+        self.parent_limit.hidden_size_non -= (impact_q_hid if self.o_member == 'NON' else 0)
 
 
     def pop_from_list(self):
@@ -171,6 +197,17 @@ class Order:
         self.parent_limit.hidden_size_non -= self.o_q_rem - self.o_q_dis if self.o_member == 'NON' else 0
         
         return self.__repr__()
+    
+
+    def reset(self):
+        """
+        Resets DLL attributes (used for pegged orders).
+        """
+        self.next_item = None
+        self.previous_item = None
+        self.root = None
+
+        return self
 
 
     def __str__(self):

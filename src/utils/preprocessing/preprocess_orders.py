@@ -1,4 +1,5 @@
 # Import Built-Ins
+import traceback
 
 # Import Third-Party
 import pandas as pd
@@ -9,61 +10,26 @@ from ..time_utils import timeit
 
 
 def preprocess_orders(path: str) -> pd.DataFrame:
-    """ Preprocessing of the order update file.
-    The function will transform the data into a usable database.
-    The data is returned as a pandas dataframe (to then be saved as .parquet).
+    """ Preprocessing of the order file. The function will transform the data 
+    into a usable database. The data is returned as a pandas dataframe (to then 
+    be saved as .parquet).
+
+    Args:
+        path (str): path of the order file.
+
+    Returns:
+        pd.DataFrame: processed table of the orders.
     """
 
     columns = [
-        'o_seq',
-        'o_isin',
-        'o_d_i',
-        'o_t_i',
-        'o_cha_id',
-        'o_id_fd',
-        'o_d_be',
-        'o_t_be',
-        'o_m_be',
-        'o_d_br',
-        'o_t_br',
-        'o_m_br',
-        'o_d_va',
-        'o_t_va',
-        'o_m_va',
-        'o_d_mo',
-        'o_t_mo',
-        'o_m_mo',
-        'o_d_en',
-        'o_t_en',
-        'o_sq_nb',
-        'o_sq_nbm',
-        'o_d_p',
-        'o_t_p',
-        'o_m_p',
-        'o_state',
-        'o_currency',
-        'o_bs',
-        'o_type',
-        'o_execution',
-        'o_validity',
-        'o_d_expiration',
-        'o_t_expiration',
-        'o_price',
-        'o_price_stop',
-        'o_price_dfpg',
-        'o_disoff',
-        'o_q_ini',
-        'o_q_min',
-        'o_q_dis',
-        'o_q_neg',
-        'o_app',
-        'o_origin',
-        'o_account',
-        'o_nb_tr',
-        'o_q_rem',
-        'o_d_upd',
-        'o_t_upd',
-        'o_member',
+        'o_seq', 'o_isin', 'o_d_i', 'o_t_i', 'o_cha_id', 'o_id_fd', 'o_d_be', 
+        'o_t_be', 'o_m_be', 'o_d_br', 'o_t_br', 'o_m_br', 'o_d_va', 'o_t_va',
+        'o_m_va', 'o_d_mo', 'o_t_mo', 'o_m_mo', 'o_d_en', 'o_t_en', 'o_sq_nb',
+        'o_sq_nbm', 'o_d_p', 'o_t_p', 'o_m_p', 'o_state', 'o_currency', 'o_bs',
+        'o_type', 'o_execution', 'o_validity', 'o_d_expiration', 
+        'o_t_expiration', 'o_price', 'o_price_stop', 'o_price_dfpg', 'o_disoff',
+        'o_q_ini', 'o_q_min', 'o_q_dis', 'o_q_neg', 'o_app', 'o_origin',
+        'o_account', 'o_nb_tr','o_q_rem', 'o_d_upd', 'o_t_upd', 'o_member'
     ]
 
     dtypes = {
@@ -121,18 +87,17 @@ def preprocess_orders(path: str) -> pd.DataFrame:
     try:
         df = pd.read_csv(path, names=columns, dtype=dtypes)
     except Exception as e:
-        print(e)
+        print(traceback.format_exc())
         print(f'Error path: {path}')
+        return pd.DataFrame()
 
-
-    # Handle data if file is empty
     if check_empty_csv(df, path):
         return df
 
-    new_columns = ['o_dtm_be', 'o_dtm_br', 'o_dtm_va', 'o_dtm_mo', 'o_dtm_p', 'o_dt_expiration', 'o_dt_upd']
     date_columns = ['o_d_be', 'o_d_br', 'o_d_va', 'o_d_mo', 'o_d_p', 'o_d_expiration', 'o_d_upd']
     time_columns = ['o_t_be', 'o_t_br', 'o_t_va', 'o_t_mo', 'o_t_p', 'o_t_expiration', 'o_t_upd']
     microseconds_columns = ['o_m_be', 'o_m_br', 'o_m_va', 'o_m_mo', 'o_m_p']
+    new_columns = ['o_dtm_be', 'o_dtm_br', 'o_dtm_va', 'o_dtm_mo', 'o_dtm_p', 'o_dt_expiration', 'o_dt_upd']
 
     for i, col in enumerate(date_columns):
 

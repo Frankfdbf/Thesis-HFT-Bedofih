@@ -54,7 +54,7 @@ def reorganize_data() -> None:
         """
         
         # For each month
-        for month in tqdm(MONTHS_STR[1:2]):
+        for month in tqdm(MONTHS_STR):
             dates = [date for date in os.listdir(os.path.join(PATHS['raw'], month)) if os.path.isdir(os.path.join(PATHS['raw'], month, date))]
             # For each trading day during the month
             for date in tqdm(dates):
@@ -75,7 +75,6 @@ def reorganize_data() -> None:
                     for isin in isins:
                         # Check if isin is in the list
                         if isin in STOCKS.all:
-                        #if isin == STOCKS.all[0]:
                             files = os.listdir(os.path.join(PATHS['raw'], month, date, isin_group, isin))
                             # For each file
                             for file in files:
@@ -112,11 +111,11 @@ if __name__ == '__main__':
     for key, value in PATHS.items():
         if key in ('root', 'raw'):
             continue
-        elif key in ('orders', 'trades', 'histories', 'removed_orders'): 
+        elif key in ('orders', 'trades', 'histories', 'removed_orders', 'limit_order_books', 'volume_by_interval'): 
             create_isin_folder_structure(name=key, path=value)
         else:
             create_single_folder(name=key, path=value)
 
     # Format and reorganise data
     print('Reorganizing data files ...')
-    reorganize_data()
+    #reorganize_data()

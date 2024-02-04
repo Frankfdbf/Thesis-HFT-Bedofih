@@ -21,6 +21,7 @@ PATHS['orders'] = os.path.join(PATHS['root'], 'orders')
 PATHS['histories'] = os.path.join(PATHS['root'], 'histories')
 PATHS['removed_orders'] = os.path.join(PATHS['root'], 'removed_orders')
 PATHS['limit_order_books'] = os.path.join(PATHS['root'], 'limit_order_books')
+PATHS['volume_by_interval'] = os.path.join(PATHS['root'], 'volume_by_interval')
 
 # Stocks/list of isins
 STOCKS = Stocks()
@@ -35,9 +36,11 @@ MARKET_CLOSE = datetime.time(hour=17, minute=30, second=0)
 CLOSING_AUCTION_CUTOFF = datetime.time(hour=17, minute=35, second=0)
 
 # Other
-O_TYPES = {'1': 'Market order',
-           '2': 'Limit order',
-           '3': 'Stop market order',
-           '4': 'Stop limit order',
-           'P': 'Pegged order',
-           'K': 'Market to limit order'}
+O_TYPES = {
+    '1': 'Market order',
+    '2': 'Limit order',
+    '3': 'Stop market order',
+    '4': 'Stop limit order',
+    'P': 'Pegged order',
+    'K': 'Market to limit order'
+}
